@@ -1,0 +1,102 @@
+\documentclass[UTF8]{ctexart}
+\title{桥梁设计报告}
+\author{Contributor:郑蕴哲}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{subfigure}
+\begin{document}
+\maketitle
+
+\setcounter{MaxMatrixCols}{25}  %增大矩阵默认最大容量
+
+\section{选题——为什么选斜拉桥}
+作为一种拉索体系，斜拉桥比梁式桥的跨越能力更大，是大跨度桥梁的最主要桥型。斜拉桥由许多直接连接到塔上的钢缆吊起桥面，斜拉桥主要由索塔、主梁、斜拉索组成。索塔型式有A型、倒Y型、H型、独柱，材料有钢和混凝土的。斜拉索布置有单索面、平行双索面、斜索面等。第一座现代斜拉桥是1955年德国DEMAG公司在瑞典修建的主跨为182.6米的斯特伦松德（Stromsund）桥。目前世界上建成的最大跨径的斜拉桥为俄罗斯的俄罗斯岛大桥，主跨径为1104米，于2012年7月完工。
+
+和拱桥相比，斜拉桥更为美观，也更加适用在长距离问题上。我们的算例要求1500m的跨度，因而一般情况下用斜拉桥更加合适。但是一个重要的问题是，我们对桥梁的参数比例一无所知。为此我们选取了一个典型的斜拉桥：苏通长江大桥作为我们的参考模型。通过对图片形状的估计，我们确定了我们桥梁的大致参数与设计方案。苏通长江大桥高度为300m，跨度1088m。因而对我们的桥，等比例地我们设定桥塔总高117m，单跨300m。
+
+\begin{figure}[h]%%图
+	\centering  %插入的图片居中表示
+	\includegraphics[width=\linewidth]{STbridge}  %插入的图，包括JPG,PNG,PDF,EPS等，放在源文件目录下
+	\caption{苏通长江大桥}  %图片的名称
+	
+\end{figure}
+
+
+\section{桥的设计}
+我们的桥主要由三部分组成：桥面，桥塔与钢索。
+
+1. 桥面。桥面使用的是二维壳单元，长1500m，宽15m，正好满足设计要求。其中mesh size为1。材料厚度参数设置为0.1m。
+
+2. 
+桥塔。桥塔采用的是二维草图拉伸的生成方式。桥塔主要由三个部分组成：最上方的拉索区，高为30m，用于连接我们的拉索。中间的桥面区：包括承受桥面的部分。最下方的支撑区。尽管我们的算例中载荷是完全稳定的，但是考虑到稳定性，我们的桥塔脚依然采取了斜的设计。这样我们的桥更能够抵御扰动的影响.
+
+3.
+桥索。桥面每隔10m，桥塔每隔2m高设置一对桥索。为了保证单元的受力均匀，桥索被均匀分散连接在桥塔上。桥索共有16种规格，分别对应桥面距离10m-160m。取桥索的mesh size极大以至于其为一个单元而不会产生额外自由度。
+
+具体的细节请参照模型Bridge0615.
+
+\section{装配}
+
+整体装配通过镜像阵列简化操作。具体细节不再赘述。最终装配图如下
+
+我们有两类约束：1.钢索约束。把我们的钢索和桥塔、桥面相连接。使用Tie约束，Node Region方式将钢索约束在桥面的边缘与桥塔上端的边缘。2. 桥面约束。使用Tie约束将桥面约束在桥塔的承受桥面的部位。
+
+载荷为工况下载荷。
+
+
+
+\section{优化}
+为了改善我们的桥面设计，我们采取了如下方案优化。首先我们尽量去除了冗余材料：为此我们将桥塔上端设计为空心。其次，我们发现最大位移点在桥塔与桥塔的中间，因而我们在这个区域额外增加了钢索以减小最大位移。然后我们还发现钢索的承受的拉力与其位置有关。越靠近桥塔的地方其所承受的拉力越小，对最大位移的抑制作用也越小。而远离桥塔的钢索则承受更大的拉力，其等效弹簧系数对最大位移的影响也越大。因此，靠近桥塔和远离桥塔的钢索所需要的截面面积是不同的。因而我们根据离桥塔的距离设计了4组不同截面面积的钢索材料属性。越靠近桥塔的钢索越细，反之越粗。最后的计算结果表明这种方式有效地在同样钢索用料的情况下减小了最大位移。
+
+\begin{figure}[h]%%图
+	\centering  %插入的图片居中表示
+	\includegraphics[width=\linewidth]{Youhua}  %插入的图，包括JPG,PNG,PDF,EPS等，放在源文件目录下
+	\caption{桥面中段额外钢索}  %图片的名称
+\end{figure}
+
+\begin{figure}[h]
+	\begin{minipage}[t]{0.5\linewidth}
+		\centering
+		\includegraphics[width=\linewidth ]{Youhua4}
+		\caption{同材料优化后最大位移}
+	\end{minipage}%
+	\hfill
+	\begin{minipage}[t]{0.5\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{Youhua3}
+		\caption{优化前最大位移}
+	\end{minipage}
+\end{figure}
+
+\section{最终结果}
+首先在后处理的Visualization部分我们可以直接得到最大位移数据。结果显示最大位移点在桥塔与桥塔中间，最大位移15.35cm。
+
+然后我们可以看到我们的Mises应力全部单元都在许可应力内，因此全部单元合格。
+
+然后我们利用Abaqus的Tool可以得到我们的材料用量。Steel用量2.043e+007kg，Concrete用量2.170e+004立方米。最终的花费为1.24亿RMB
+
+\begin{figure}[h]%%图
+	\centering  %插入的图片居中表示
+	\includegraphics[width=\linewidth]{Youhua4}  %插入的图，包括JPG,PNG,PDF,EPS等，放在源文件目录下
+	\caption{最大桥面位移}  %图片的名称
+\end{figure}
+\begin{figure}[h]
+	\begin{minipage}[t]{0.5\linewidth}
+		\centering
+		\includegraphics[width=\linewidth ]{Result1}
+		\caption{混凝土应力情况}
+	\end{minipage}%
+	\hfill
+	\begin{minipage}[t]{0.5\linewidth}
+		\centering
+		\includegraphics[width=\linewidth]{Result2}
+		\caption{钢索应力情况}
+	\end{minipage}
+\end{figure}
+\bibliographystyle{elsarticle-num}
+%\bibliography{references}
+\end{document}
